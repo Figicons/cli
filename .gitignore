@@ -3,3 +3,4 @@ bin/store
 figicons
 .rts2_*
 dist
+configs/figmaAPI.json
