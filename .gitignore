@@ -1,0 +1,5 @@
+node_modules
+bin/store
+figicons
+.rts2_*
+dist
