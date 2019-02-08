@@ -22,7 +22,6 @@
     "cheerio": "^1.0.0-rc.2",
     "commander": "^2.19.0",
     "inquirer": "^6.2.1",
-    "microbundle": "^0.9.0",
     "node-persist": "^3.0.2",
     "parse5": "^5.1.0",
     "request": "^2.88.0",
