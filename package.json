@@ -1,0 +1,31 @@
+{
+  "name": "figicons-cli",
+  "version": "1.0.0",
+  "author": "Stefan Mansson <st.mansson@icloud.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Figicons/cli.git"
+  },
+  "homepage": "https://figicons.com",
+  "license": "MIT",
+  "private": false,
+  "bin": {
+    "figicons": "./bin/figicons.js"
+  },
+  "engines": {
+    "node": ">=8"
+  },
+  "dependencies": {
+    "app-root-path": "^2.1.0",
+    "camelcase": "^5.0.0",
+    "chalk-pipe": "^2.0.0",
+    "cheerio": "^1.0.0-rc.2",
+    "commander": "^2.19.0",
+    "inquirer": "^6.2.1",
+    "microbundle": "^0.9.0",
+    "node-persist": "^3.0.2",
+    "parse5": "^5.1.0",
+    "request": "^2.88.0",
+    "svgo": "^1.1.1"
+  }
+}
