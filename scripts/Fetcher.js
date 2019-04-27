@@ -63,7 +63,7 @@ class Fetcher {
 
         await Promise.all(this.grabImageFiles(images, iconMap));
 
-        Messager.endLoading(`👏  %s Got ${icons.length} icons from: ${figmaData.name}`, true);
+        Messager.endLoading(`👏  %s Got ${icons.length} icons from: ${figmaData.name}`, 'success');
     }
 
     grabImageFiles(images, iconMap) {
@@ -79,7 +79,7 @@ class Fetcher {
     async getFigmaProject(key) {
         Messager.startLoading(`🔎  Inspecting file with Figma API`);
         const figmaData = await this.request(`files/${key}`);
-        Messager.endLoading(`📚  %s Read project data from Figma`, true);
+        Messager.endLoading(`📚  %s Read project data from Figma`, 'success');
 
         return figmaData;
     }
