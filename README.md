@@ -6,10 +6,6 @@ The Figicons CLI provides the right tooling to easily fetch, parse & optimize yo
 
 ```
 yarn global add figicons-cli
-
-// or
-
-npm install figicons-cli -g
 ```
 
 
