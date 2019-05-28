@@ -11,7 +11,7 @@ yarn global add figicons-cli
 
 ## Usage
 
-[Check the full documentation](https://figicons.com/custom-icons) for starting off with the CLI.
+[View the full guide](https://figicons.com/custom-icons) on how to start off with the Figicons CLI and build custom icons.
 
 
 ## API
@@ -21,7 +21,7 @@ Figicons comes with a core config that can be altered using the API. You should 
 
 ## Contributing guidelines
 
-If you wish to contribute to the Figicons project please check out the [contributing guidelines](https://github/Figicons/Figicons/CODE_OF_CONDUCT.md).
+If you wish to contribute to the Figicons project please check out the [contributing guidelines](https://github.com/Figicons/Figicons/CODE_OF_CONDUCT.md).
 
 ## License
 
