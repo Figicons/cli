@@ -21,7 +21,7 @@ Figicons comes with a core config that can be altered using the API. You should 
 
 ## Contributing guidelines
 
-If you wish to contribute to the Figicons project please check out the [contributing guidelines](https://github.com/Figicons/Figicons/CODE_OF_CONDUCT.md).
+If you wish to contribute to the Figicons project please check out the [contributing guidelines](https://github.com/Figicons/Figicons/blob/master/CODE_OF_CONDUCT.md).
 
 ## License
 
