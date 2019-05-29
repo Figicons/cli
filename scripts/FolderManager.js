@@ -8,7 +8,6 @@ class FolderManager {
         FolderManager.del(dir);
         fs.mkdirSync(FolderManager.dirs.dir);
         fs.mkdirSync(FolderManager.dirs.iconsDir);
-        fs.mkdirSync(FolderManager.dirs.componentsDir);
     }
 
     static del(path) {
@@ -29,7 +28,6 @@ class FolderManager {
         return {
             dir: FolderManager.dir,
             iconsDir: path.join(FolderManager.dir, 'icons'),
-            componentsDir: path.join(FolderManager.dir, 'components'),
             iconsJson: path.join(FolderManager.dir, 'figicons.json'),
         };
     }

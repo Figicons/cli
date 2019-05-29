@@ -6,6 +6,15 @@
     "type": "git",
     "url": "https://github.com/Figicons/cli.git"
   },
+  "keywords": [
+    "figicons",
+    "icons",
+    "figma",
+    "react",
+    "custom-icon",
+    "svgo",
+    "design"
+  ],
   "homepage": "https://figicons.com",
   "license": "MIT",
   "private": false,

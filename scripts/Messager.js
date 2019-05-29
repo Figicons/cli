@@ -33,6 +33,10 @@ class Messager {
             str = str.replace('%s', chalkPipe('redBright.bold')('error'));
         }
 
+        if (type === 'info') {
+            str = str.replace('%s', chalkPipe('cyanBright.bold')('info'));
+        }
+
         ui.log.write(str);
     }
 

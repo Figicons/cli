@@ -79,7 +79,7 @@ class Fetcher {
     async getFigmaProject(key) {
         Messager.startLoading(`🔎  Inspecting file with Figma API`);
         const figmaData = await this.request(`files/${key}`);
-        Messager.endLoading(`📚  %s Read project data from Figma`, 'success');
+        Messager.endLoading(`📚  %s Read file data from Figma`, 'success');
 
         return figmaData;
     }
@@ -102,11 +102,10 @@ class Fetcher {
                     case 403:
                         return reject({
                             code: response.statusCode,
-                            message: "Error fetching from Figma. Maybe you're unauthorized?",
+                            message: "Couldn't fetch file from Figma. Maybe you're unauthorized or file doesn't exist.",
                         });
                     default:
-                        console.log(response);
-                        return reject({ code: response.statusCode, message: 'Something went wrong with the request.' });
+                        return reject({ code: response.statusCode, message: 'Something went wrong with the request, try again later.' });
                 }
             });
         });

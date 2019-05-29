@@ -24,21 +24,20 @@ const figiconsConfig = path.join(process.cwd(), '.figiconsrc');
 
     program
         .version(package.version)
-        .option('-K, --key', 'Figma project key')
-        .option('-T, --token', 'Figma account token');
+        .option('-K, --key', 'Your Figma project key')
+        .option('-T, --token', 'Your Figma personal access token');
 
-    program.command('clean').action(async function(cmd, options) {
-        Messager.startCommand();
+    program.parse(process.argv);
+
+    program.command('clean').action(async (cmd, options) => {
         await parser.clean();
-        Messager.endCommand();
+        process.exit(1);
     });
 
     program.on('command:*', function() {
         console.error('Invalid command: %s\nSee --help for a list of available commands.', program.args.join(' '));
         process.exit(1);
     });
-
-    program.parse(process.argv);
 
     const fetchIcons = async (config, saveKeys) => {
         FolderManager.createDefault('figicons');
@@ -62,10 +61,8 @@ const figiconsConfig = path.join(process.cwd(), '.figiconsrc');
             await fetcher.grabImageData(figmaData);
             await parser.clean();
             await parser.bundle();
-
-            // await Packager.package();
         } catch (error) {
-            Messager.log(error.message);
+            Messager.endLoading(`💔  %s ${error.message}`, 'error');
         }
     };
 
@@ -76,16 +73,16 @@ const figiconsConfig = path.join(process.cwd(), '.figiconsrc');
         if (configData.figmaConfig) {
             if (!configData.figmaConfig.project) {
                 validConfig = false;
-                Messager.log(`😬 %s 'figmaconfig.project' not found in .figiconsrc`, 'error');
+                Messager.log(`😬 %s 'figmaConfig.project' not found in .figiconsrc`, 'error');
             }
 
             if (!configData.figmaConfig.token) {
                 validConfig = false;
-                Messager.log(`😬 %s 'figmaconfig.token' not found in .figiconsrc`, 'error');
+                Messager.log(`😬 %s 'figmaConfig.token' not found in .figiconsrc`, 'error');
             }
 
             if (validConfig) {
-                Messager.log(`🦄  %s Got a project & token. Skipping selection...`, 'success');
+                Messager.log(`🦄  %s Got a project key & token. Skipping selection...`, 'success');
                 await fetchIcons({ key: configData.figmaConfig.project, token: configData.figmaConfig.token });
             }
         }
@@ -109,9 +106,9 @@ const figiconsConfig = path.join(process.cwd(), '.figiconsrc');
                       a.push({ name: `${val.name} (${k})`, value: k });
                       return a;
                   }, [])
-                : [{ name: 'No saved project found', disabled: 'Create a new one below' }];
+                : [{ name: 'No saved projects found', disabled: 'Create a new one below' }];
 
-        const { key, token, selectedKey } = await inquirer.prompt([
+        const promptAnswers = await inquirer.prompt([
             {
                 type: 'list',
                 name: 'selectedKey',
@@ -121,35 +118,40 @@ const figiconsConfig = path.join(process.cwd(), '.figiconsrc');
             {
                 type: 'input',
                 name: 'key',
-                message: 'Enter the file key of your Figma project',
-                when: function(answers) {
+                message: 'Enter a Figma project key:',
+                when: answers => {
                     return answers.selectedKey === 'New project';
                 },
             },
             {
                 type: 'input',
                 name: 'token',
-                message: 'Enter a personal access token',
-                when: function(answers) {
+                message: 'Enter a Figma personal access token:',
+                when: answers => {
                     return answers.selectedKey === 'New project';
                 },
             },
         ]);
 
-        let config = { key, token };
+        let config = { key: promptAnswers.key };
         let isSaved = true;
 
-        if (key && token) {
-            isSaved = false;
-            config.key = key;
+        if (promptAnswers.selectedKey !== 'New project') {
+            const { token } = await keyStore.getItem(promptAnswers.selectedKey);
+            config.key = promptAnswers.selectedKey;
             config.token = token;
-        } else {
-            const { token: selectedToken } = await keyStore.getItem(selectedKey);
-            config.key = selectedKey;
-            config.token = selectedToken;
+        } else if (promptAnswers.key && promptAnswers.token) {
+            isSaved = false;
+            config.key = promptAnswers.key;
+            config.token = promptAnswers.token;
         }
 
-        await fetchIcons(config, !isSaved);
+        if (config.key && config.token) {
+            await fetchIcons(config, !isSaved);
+        } else {
+            Messager.log(`👀  %s You didn't provide a personal access toke from Figma.`, 'error');
+            Messager.log(`🤔  %s This might help you: https://figicons.com/custom-icons`, 'info');
+        }
     }
 
     Messager.endCommand();
