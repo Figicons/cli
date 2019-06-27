@@ -6,6 +6,9 @@
     "type": "git",
     "url": "https://github.com/Figicons/cli.git"
   },
+  "scripts": {
+    "package": "changelog && git push --follow-tags && yarn publish --access public --non-interactive"
+  },
   "keywords": [
     "figicons",
     "icons",
@@ -35,5 +38,8 @@
     "parse5": "^5.1.0",
     "request": "^2.88.0",
     "svgo": "^1.1.1"
+  },
+  "devDependencies": {
+    "changelog.md": "^1.1.0"
   }
 }
