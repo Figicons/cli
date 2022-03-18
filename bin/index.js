@@ -8,10 +8,11 @@ import { fileURLToPath } from "url";
 import storage from "node-persist";
 import pkg from "../package.json";
 
-import Fetcher from "../lib/Fetcher.mjs";
 import Parser from "../lib/Parser.mjs";
 import Messager from "../lib/Messager.mjs";
 import { createDefaultFolders } from "../lib/folder.mjs";
+import { getFigmaProject, getImageData } from "../lib/figmaFetch.mjs";
+import state from "../lib/state.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,13 +51,11 @@ async function main() {
   const fetchIcons = async (config, saveKeys) => {
     createDefaultFolders("figicons");
 
-    const fetcher = new Fetcher({
-      key: config.key,
-      token: config.token,
-    });
+    state.key = config.key;
+    state.token = config.token;
 
     try {
-      const figmaData = await fetcher.getFigmaProject(config.key);
+      const figmaData = await getFigmaProject(config.key);
 
       if (saveKeys) {
         await keyStore.setItem(config.key, {
@@ -66,7 +65,7 @@ async function main() {
         Messager.log(`⏰  %s Saved project key to recents.`, "success");
       }
 
-      await fetcher.grabImageData(figmaData);
+      await getImageData(figmaData);
       await parser.clean();
       await parser.bundle();
     } catch (error) {
