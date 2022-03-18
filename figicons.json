@@ -717,7 +717,7 @@
   "sidebar": {
     "name": "sidebar",
     "file": "sidebar.svg",
-    "content": "<path d=\"M8 21L8 3\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path>\n<rect x=\"2\" y=\"2\" width=\"20\" height=\"20\" rx=\"4\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></rect>"
+    "content": "<rect x=\"22\" y=\"2\" width=\"20\" height=\"20\" rx=\"4\" transform=\"rotate(90 22 2)\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></rect><path d=\"M18 22a4 4 0 0 0 4-4v-1H2v1a4 4 0 0 0 4 4h12Z\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path>"
   },
   "skip-next": {
     "name": "skip-next",

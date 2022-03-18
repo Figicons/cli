@@ -1,30 +1,27 @@
 #!/usr/bin/env node --experimental-json-modules
 
-import { program } from "commander";
-import inquirer from "inquirer";
-import path from "path";
 import fs from "fs";
-import { fileURLToPath } from "url";
+import inquirer from "inquirer";
 import storage from "node-persist";
 import pkg from "../package.json";
+import { program } from "commander";
 
-import { optimizeIcons, bundleIcons } from "../lib/iconParser.mjs";
-import { log, startCommand, endCommand, endLoading } from "../lib/logger.mjs";
-import { createDefaultFolders } from "../lib/folder.mjs";
-import { getFigmaProject, getImageData } from "../lib/figmaFetch.mjs";
+import {
+  log,
+  logBeginTimer,
+  logEndTimer,
+  logEndLoader,
+} from "../lib/logger.mjs";
 import state from "../lib/state.mjs";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const keyStoreDir = path.join(__dirname, "./store");
-const figiconsConfig = path.join(process.cwd(), ".figiconsrc");
+import { createDefaultFolders } from "../lib/folder.mjs";
+import { optimizeIcons, bundleIcons } from "../lib/parser.mjs";
+import { getFigmaProject, getImageData } from "../lib/fetcher.mjs";
+import { KEYSTORE_PATH, FIGICONS_CONFIG_PATH } from "../lib/paths.mjs";
 
 async function main() {
   let validConfig = true;
-  const keyStore = storage.create({ dir: keyStoreDir });
-  const configExists = fs.existsSync(figiconsConfig);
-  console.log(keyStoreDir);
-
+  const keyStore = storage.create({ dir: KEYSTORE_PATH });
+  const configExists = fs.existsSync(FIGICONS_CONFIG_PATH);
   await keyStore.init();
 
   program
@@ -68,12 +65,12 @@ async function main() {
       await optimizeIcons();
       await bundleIcons();
     } catch (error) {
-      endLoading(`💔  %s ${error.message}`, "error");
+      logEndLoader(`💔  %s ${error.message}`, "error");
     }
   };
 
   if (configExists) {
-    const configFile = fs.readFileSync(figiconsConfig);
+    const configFile = fs.readFileSync(FIGICONS_CONFIG_PATH);
     const configData = JSON.parse(configFile);
 
     if (configData.figmaConfig) {
@@ -101,7 +98,7 @@ async function main() {
   }
 
   if (program.args.length < 1 && validConfig && !configExists) {
-    startCommand();
+    logBeginTimer();
 
     const keys = await keyStore.keys();
     const values = await keyStore.values();
@@ -136,17 +133,13 @@ async function main() {
         type: "input",
         name: "key",
         message: "Enter a Figma project key:",
-        when: (answers) => {
-          return answers.selectedKey === "New project";
-        },
+        when: (answers) => answers.selectedKey === "New project",
       },
       {
         type: "input",
         name: "token",
         message: "Enter a Figma personal access token:",
-        when: (answers) => {
-          return answers.selectedKey === "New project";
-        },
+        when: (answers) => answers.selectedKey === "New project",
       },
     ]);
 
@@ -177,7 +170,7 @@ async function main() {
     }
   }
 
-  endCommand();
+  logEndTimer();
 }
 
 main();
