@@ -11,7 +11,7 @@ import pkg from "../package.json";
 import Fetcher from "../lib/Fetcher.mjs";
 import Parser from "../lib/Parser.mjs";
 import Messager from "../lib/Messager.mjs";
-import FolderManager from "../lib/FolderManager.mjs";
+import { createDefaultFolders } from "../lib/folder.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,7 +48,7 @@ async function main() {
   });
 
   const fetchIcons = async (config, saveKeys) => {
-    FolderManager.createDefault("figicons");
+    createDefaultFolders("figicons");
 
     const fetcher = new Fetcher({
       key: config.key,
