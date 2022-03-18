@@ -1,3 +1,11 @@
+## [Version 0.0.2](https://github.com/Figicons/cli/releases/tag/v0.0.2) (2022-3-18)
+
+### Bug fixes
+
+- token + file handling: [`9b4f966`](https://github.com/Figicons/cli/commit/9b4f966)
+
+[...full changes](https://github.com/Figicons/cli/compare/v0.0.1...v0.0.2)
+
 ## [Version 0.0.1](https://github.com/Figicons/cli/releases/tag/v0.0.1) (2022-3-18)
 
 ### New features
