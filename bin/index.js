@@ -8,8 +8,8 @@ import { fileURLToPath } from "url";
 import storage from "node-persist";
 import pkg from "../package.json";
 
-import Parser from "../lib/Parser.mjs";
-import Messager from "../lib/Messager.mjs";
+import { optimizeIcons, bundleIcons } from "../lib/iconParser.mjs";
+import { log, startCommand, endCommand, endLoading } from "../lib/logger.mjs";
 import { createDefaultFolders } from "../lib/folder.mjs";
 import { getFigmaProject, getImageData } from "../lib/figmaFetch.mjs";
 import state from "../lib/state.mjs";
@@ -24,7 +24,6 @@ async function main() {
   const keyStore = storage.create({ dir: keyStoreDir });
   const configExists = fs.existsSync(figiconsConfig);
   console.log(keyStoreDir);
-  const parser = new Parser();
 
   await keyStore.init();
 
@@ -36,7 +35,7 @@ async function main() {
   program.parse(process.argv);
 
   program.command("clean").action(async (cmd, options) => {
-    await parser.clean();
+    await optimizeIcons();
     process.exit(1);
   });
 
@@ -62,14 +61,14 @@ async function main() {
           name: figmaData.name,
           token: config.token,
         });
-        Messager.log(`⏰  %s Saved project key to recents.`, "success");
+        log(`⏰  %s Saved project key to recents.`, "success");
       }
 
       await getImageData(figmaData);
-      await parser.clean();
-      await parser.bundle();
+      await optimizeIcons();
+      await bundleIcons();
     } catch (error) {
-      Messager.endLoading(`💔  %s ${error.message}`, "error");
+      endLoading(`💔  %s ${error.message}`, "error");
     }
   };
 
@@ -80,22 +79,16 @@ async function main() {
     if (configData.figmaConfig) {
       if (!configData.figmaConfig.project) {
         validConfig = false;
-        Messager.log(
-          `😬 %s 'figmaConfig.project' not found in .figiconsrc`,
-          "error"
-        );
+        log(`😬 %s 'figmaConfig.project' not found in .figiconsrc`, "error");
       }
 
       if (!configData.figmaConfig.token) {
         validConfig = false;
-        Messager.log(
-          `😬 %s 'figmaConfig.token' not found in .figiconsrc`,
-          "error"
-        );
+        log(`😬 %s 'figmaConfig.token' not found in .figiconsrc`, "error");
       }
 
       if (validConfig) {
-        Messager.log(
+        log(
           `🦄  %s Got a project key & token. Skipping selection...`,
           "success"
         );
@@ -108,7 +101,7 @@ async function main() {
   }
 
   if (program.args.length < 1 && validConfig && !configExists) {
-    Messager.startCommand();
+    startCommand();
 
     const keys = await keyStore.keys();
     const values = await keyStore.values();
@@ -173,18 +166,18 @@ async function main() {
     if (config.key && config.token) {
       await fetchIcons(config, !isSaved);
     } else {
-      Messager.log(
-        `👀  %s You didn't provide a personal access toke from Figma.`,
+      log(
+        `👀  %s You didn't provide a personal access token from Figma.`,
         "error"
       );
-      Messager.log(
+      log(
         `🤔  %s This might help you: https://figicons.com/custom-icons`,
         "info"
       );
     }
   }
 
-  Messager.endCommand();
+  endCommand();
 }
 
 main();
