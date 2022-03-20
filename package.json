@@ -1,6 +1,6 @@
 {
   "name": "figicons-cli",
-  "version": "0.0.2",
+  "version": "2.0.0",
   "author": "Stefan Mansson <st.mansson@icloud.com>",
   "type": "module",
   "repository": {
@@ -33,8 +33,6 @@
     "cheerio": "^1.0.0-rc.10",
     "commander": "^9.1.0",
     "inquirer": "^8.2.1",
-    "node-persist": "^3.1.0",
-    "parse5": "^6.0.1",
     "request": "^2.88.2",
     "svgo": "^2.8.0"
   },

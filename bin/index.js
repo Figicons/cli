@@ -1,9 +1,9 @@
 #!/usr/bin/env node --experimental-json-modules
 
-import inquirer from "inquirer";
-import storage from "node-persist";
 import pkg from "../package.json";
+import fs from "fs";
 import { program } from "commander";
+import chalkPipe from "chalk-pipe";
 
 import {
   log,
@@ -15,19 +15,20 @@ import state from "../lib/state.mjs";
 import { createDefaultFolders } from "../lib/folder.mjs";
 import { optimizeIcons, bundleIcons } from "../lib/parser.mjs";
 import { getFigmaProject, getImageData } from "../lib/fetcher.mjs";
-import { KEYSTORE_PATH } from "../lib/paths.mjs";
-import { getKeyAndToken } from "../lib/tokens.mjs";
-
-let keyStore;
+import { FIGICONS_CONFIG_PATH } from "../lib/paths.mjs";
 
 async function main() {
-  keyStore = storage.create({ dir: KEYSTORE_PATH });
-  await keyStore.init();
-
   program
     .version(pkg.version)
-    .option("-K, --key <type>", "Your Figma project key")
-    .option("-T, --token <type>", "Your Figma personal access token");
+    .option("-K, --key <type>", "Figma project key")
+    .option("-T, --token <type>", "Figma personal access token")
+    .option("-D, --dim <type>", "Dimensions of Figma icons to filter")
+    .option("-N, --name <type>", "Start name to filter Figma icons", "")
+    .option(
+      "-P, --page <type>",
+      "Name of page in Figma project to fetch from",
+      ""
+    );
 
   program.parse(process.argv);
 
@@ -44,125 +45,116 @@ async function main() {
     process.exit(1);
   });
 
-  const keys = await keyStore.keys();
-  const values = await keyStore.values();
+  const options = program.opts();
+  const configExists = fs.existsSync(FIGICONS_CONFIG_PATH);
+  const configFile = configExists ? fs.readFileSync(FIGICONS_CONFIG_PATH) : {};
+  const configData = JSON.parse(configFile);
 
-  await keyStore.setItem("eIOdDEWeiHETuccK5xpfNhEc", {
-    name: "Sample icons",
-    token: "6742-59554322-f562-4177-8848-f7125dce459a",
-  });
+  const cliToken = options.token;
+  const fileToken =
+    configExists && configData?.token ? configData?.token : undefined;
 
-  const keyChoices =
-    keys.length > 0
-      ? keys.reduce((a, k, i) => {
-          const val = values[i];
-          a.push({ name: `${val.name} (${k})`, value: k });
-          return a;
-        }, [])
-      : [
-          {
-            name: "No saved projects found",
-            disabled: "Create a new one below",
-          },
-        ];
+  const cliKey = options.key;
+  const fileKey =
+    configExists && configData?.project ? configData?.project : undefined;
 
-  const config = getKeyAndToken();
-  const hasAllCliOptions = config.key && config.token;
-  let shouldSave = hasAllCliOptions;
+  const cliDim = options.dim;
+  const fileDim = configExists && configData?.dim ? configData?.dim : undefined;
 
-  if (!hasAllCliOptions) {
-    const prompts = [];
+  const cliPrefix = options.prefix;
+  const filePrefix =
+    configExists && configData?.prefix ? configData?.prefix : undefined;
 
-    if (!config.key && !config.token) {
-      prompts.push({
-        type: "list",
-        name: "selectedKey",
-        message: "Select a saved Figma project, or a enter a new project key",
-        choices: [...keyChoices, new inquirer.Separator(), "New project"],
-      });
-    }
+  const cliPage = options.page;
+  const filePage =
+    configExists && configData?.page ? configData?.page : undefined;
 
-    if (!config.key) {
-      prompts.push({
-        type: "input",
-        name: "key",
-        message: "Enter a Figma project key:",
-        when: (answers) => answers.selectedKey === "New project",
-      });
-    }
+  const config = {
+    key: cliKey || fileKey,
+    token: cliToken || fileToken,
+    prefix: cliPrefix || filePrefix,
+    dim: cliDim || fileDim,
+    page: cliPage || filePage,
+  };
 
-    if (!config.token) {
-      prompts.push({
-        type: "input",
-        name: "token",
-        message: "Enter a Figma personal access token:",
-        when: (answers) => answers.selectedKey === "New project",
-      });
-    }
-
-    const promptAnswers = await inquirer.prompt(prompts);
-
-    shouldSave =
-      promptAnswers.selectedKey === "New project" ||
-      (config.key && config.token);
-
-    if (promptAnswers.key) {
-      config.key = promptAnswers.key;
-    }
-
-    if (promptAnswers.token) {
-      config.token = promptAnswers.token;
-    }
-
-    if (promptAnswers.selectedKey !== "New project") {
-      const { token } = await keyStore.getItem(promptAnswers.selectedKey);
-      config.key = promptAnswers.selectedKey;
-      config.token = token;
-    }
+  if (!config.key) {
+    const message = configExists
+      ? `😬 %s .project' not found in .figiconsrc`
+      : `😬 %s Project key is missing. Set with -K, --key <type>`;
+    log(message, "error");
   }
 
-  if (config.key && config.token) {
-    await fetchIcons(config, shouldSave);
-  } else {
+  if (!config.token) {
+    const message = configExists
+      ? `😬 %s .token' not found in .figiconsrc`
+      : `😬 %s Token is missing. Set with -T, --token <type>`;
+    log(message, "error");
+  }
+
+  if (config.key) {
+    const figmaLinkRegexPattern =
+      /^(?:https:\/\/)?(?:www\.)?figma\.com\/(file|proto)\/([0-9a-zA-Z]{22,128})(?:\/.*)?node-id=([^&]*)$/;
+    const matched = config.key.match(figmaLinkRegexPattern);
+    const matchKey = matched && matched.length > 2 ? matched[2] : config.key;
+
+    state.key = matchKey;
+  }
+
+  if (config.token) {
+    state.token = config.token;
+  }
+
+  if (config.dim) {
+    state.iconSize = parseInt(config.dim);
+  }
+
+  if (config.prefix) {
+    state.iconPrefix = config.prefix;
+  }
+
+  if (config.page) {
+    state.page = config.page;
+  }
+
+  log(`👉 ${chalkPipe("cyanBright.bold")("Figma project key")}: ${state.key}`);
+
+  if (state.iconPrefix) {
     log(
-      `👀  %s You didn't provide a personal access token from Figma.`,
-      "error"
+      `👉 ${chalkPipe("cyanBright.bold")("Name filter")}: ${state.iconPrefix}`
     );
+  }
+
+  if (state.iconSize > 0) {
     log(
-      `🤔  %s This might help you: https://figicons.com/custom-icons`,
-      "info"
+      `👉 ${chalkPipe("cyanBright.bold")("Size filter")}: ${state.iconSize}x${
+        state.iconSize
+      }`
     );
+  }
+
+  if (state.page) {
+    log(`👉 ${chalkPipe("cyanBright.bold")("Page")}: ${state.page}`);
+  }
+
+  if (state.key && state.token) {
+    await fetchIcons();
   }
 
   logEndTimer();
 }
 
-async function fetchIcons(config, shouldSave) {
+async function fetchIcons() {
   logBeginTimer();
 
   createDefaultFolders("figicons");
 
-  state.key = config.key;
-  state.token = config.token;
-
   try {
-    const figmaData = await getFigmaProject(config.key);
-    await getImageData(figmaData);
-    await optimizeIcons();
-    await bundleIcons();
-
-    if (shouldSave) {
-      const keyExists = await keyStore.getItem(config.key);
-      await keyStore.setItem(config.key, {
-        name: figmaData.name,
-        token: config.token,
-      });
-
-      if (keyExists) return;
-      log(`⏰  %s Saved project key to recents.`, "success");
-    }
+    const figmaData = await getFigmaProject(state.key);
+    const iconArray = await getImageData(figmaData);
+    const iconMap = await optimizeIcons(iconArray);
+    await bundleIcons(iconMap);
   } catch (error) {
-    logEndLoader(`💔  %s ${error.message}`, "error");
+    logEndLoader(`💔 %s ${error.message}`, "error");
   }
 }
 
